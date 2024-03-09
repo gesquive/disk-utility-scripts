@@ -1,4 +1,14 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
+
+# Check required dependencies
+readonly DEPENDENCIES="du awk tar xz pv"
+for dependency in ${DEPENDENCIES}; do
+  if ! command -v "${dependency}" > /dev/null 2>&1; then
+    echo "ERROR: command '${dependency}' not found" >&2
+    exit 2
+  fi
+done
+
 
 src="$1"
 path=$(dirname $src)
@@ -12,6 +22,7 @@ total=$(du -sb "$src" | awk '{print $1}')
 
 #tar -cf - -C $path $name -P | pv -s $(du -sb $path | awk '{print $1}') | pixz -9 > $name.tar.xz  
 
-tar -I'pixz -9' -cf - -C $path $name -P | (pv -s $total > $name.tar.xz)
+# tar -I'pixz -9' -cf - -C $path $name -P | (pv -s $total > $name.tar.xz)
+tar -I'xz -T0 -9' -cf - -C $path $name -P | pv -s $total > $name.tar.xz
 
 #$tar -I'pixz -9' -cf $name.tar.xz -C $path $name | progress -m $1
